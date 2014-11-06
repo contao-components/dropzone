@@ -1,6 +1,6 @@
 {
     "name": "contao-components/dropzone",
-    "type": "component",
+    "type": "contao-component",
     "description": "DropZone integration for Contao Open Source CMS",
     "license": "MIT",
     "authors": [
@@ -10,19 +10,6 @@
         }
     ],
     "require": {
-        "robloach/component-installer": "~0.0"
-    },
-    "extra": {
-        "component": {
-            "scripts": [
-                "js/dropzone.min.js"
-            ],
-            "styles": [
-                "css/dropzone.min.css"
-            ],
-            "files": [
-                "images/*"
-            ]
-        }
+        "contao-components/installer": "~1.0"
     }
 }
