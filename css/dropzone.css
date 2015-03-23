@@ -30,8 +30,6 @@
 }
 .dropzone .dz-message {
   opacity: 1;
-  -ms-filter: none;
-  filter: none;
 }
 .dropzone.dz-drag-hover {
   border-color: rgba(0,0,0,0.15);
