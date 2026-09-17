@@ -3,7 +3,7 @@ Object.defineProperties(exports, {
 	[Symbol.toStringTag]: { value: "Module" }
 });
 //#region package.json
-var version = "6.3.1";
+var version = "6.3.2";
 //#endregion
 //#region src/extend.ts
 function extend(...args) {
@@ -43,7 +43,7 @@ var Emitter = class {
 	emit(event, ...args) {
 		this._callbacks = this._callbacks || {};
 		let callbacks = this._callbacks[event];
-		if (callbacks) for (let callback of callbacks) callback.apply(this, args);
+		if (callbacks) for (let callback of callbacks.slice()) callback.apply(this, args);
 		if (this.element) this.element.dispatchEvent(this.makeEvent("dropzone:" + event, { args }));
 		return this;
 	}
@@ -1156,6 +1156,9 @@ var Dropzone = class Dropzone extends Emitter {
 			}
 			this.createThumbnailFromUrl(file, width, height, resizeMethod, fixOrientation, callback);
 		};
+		fileReader.onerror = (e) => {
+			if (callback != null) callback(e);
+		};
 		fileReader.readAsDataURL(file);
 	}
 	displayExistingFile(mockFile, imageUrl, callback, crossOrigin, resizeThumbnail = true) {
@@ -1166,7 +1169,7 @@ var Dropzone = class Dropzone extends Emitter {
 			if (callback) callback();
 		} else {
 			let onDone = (thumbnail) => {
-				this.emit("thumbnail", mockFile, thumbnail);
+				if (typeof thumbnail === "string") this.emit("thumbnail", mockFile, thumbnail);
 				if (callback) callback();
 			};
 			mockFile.dataURL = imageUrl;
@@ -1229,7 +1232,7 @@ var Dropzone = class Dropzone extends Emitter {
 				if (callback != null) return callback(thumbnail, canvas);
 			});
 		};
-		if (callback != null) img.onerror = callback;
+		if (callback != null) img.onerror = (e) => callback(e);
 		return img.src = file.dataURL;
 	}
 	processQueue() {
@@ -1265,7 +1268,12 @@ var Dropzone = class Dropzone extends Emitter {
 		if (file.status === Dropzone.UPLOADING) {
 			let groupedFiles = this._getFilesWithXhr(file.xhr);
 			for (let groupedFile of groupedFiles) groupedFile.status = Dropzone.CANCELED;
-			if (typeof file.xhr !== "undefined") file.xhr.abort();
+			if (file.upload.chunked && file.upload.chunks) {
+				for (let chunk of file.upload.chunks) if (chunk && chunk.xhr && chunk.status === Dropzone.UPLOADING) {
+					chunk.status = Dropzone.CANCELED;
+					chunk.xhr.abort();
+				}
+			} else if (typeof file.xhr !== "undefined") file.xhr.abort();
 			for (let groupedFile of groupedFiles) this.emit("canceled", groupedFile);
 			if (this.options.uploadMultiple) this.emit("canceledmultiple", groupedFiles);
 		} else if (file.status === Dropzone.ADDED || file.status === Dropzone.QUEUED) {
