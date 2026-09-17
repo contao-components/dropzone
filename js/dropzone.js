@@ -3,7 +3,7 @@ Object.defineProperties(exports, {
 	[Symbol.toStringTag]: { value: "Module" }
 });
 //#region package.json
-var version = "6.3.3";
+var version = "6.3.4";
 //#endregion
 //#region src/extend.ts
 function extend(...args) {
@@ -771,7 +771,7 @@ var Dropzone = class Dropzone extends Emitter {
 		return this.files.filter((file) => file.status === Dropzone.UPLOADING || file.status === Dropzone.QUEUED).map((file) => file);
 	}
 	init() {
-		if (this.element.tagName === "form") this.element.setAttribute("enctype", "multipart/form-data");
+		if (this.element.tagName === "FORM") this.element.setAttribute("enctype", "multipart/form-data");
 		if (this.element.classList.contains("dropzone") && !this.element.querySelector(".dz-message")) this.element.appendChild(Dropzone.createElement(`<div class="dz-default dz-message"><button class="dz-button" type="button">${this.options.dictDefaultMessage}</button></div>`));
 		if (this.clickableElements.length) {
 			let setupHiddenFileInput = () => {
@@ -873,7 +873,8 @@ var Dropzone = class Dropzone extends Emitter {
 			this.hiddenFileInput = null;
 		}
 		delete this.element.dropzone;
-		return Dropzone.instances.splice(Dropzone.instances.indexOf(this), 1);
+		let index = Dropzone.instances.indexOf(this);
+		return index === -1 ? [] : Dropzone.instances.splice(index, 1);
 	}
 	updateTotalUploadProgress() {
 		let totalUploadProgress;
